@@ -1,0 +1,25 @@
+SELECT
+    --DISTINCT 이유: 1panel에 placement list가 보통 여러개 들어가 있어서 중복된 row가 여러개 나온다. 
+    DISTINCT f.ObjectName, d.ObjectName, b.bstrRefDesignator, 
+                b.dOffsetX,b.dOffsetY,b.dAngle, b.bOmit --e.*,
+	                                                     --f.ObjectName Result1, e.bstrDisplayName,  d.ObjectName Component, 
+                                                                 --b.bstrRefDesignator, b.dOffsetX, b.dOffsetY, b.dAngle, b.bOmit, b.bExclusive, b.bGlue
+FROM 
+    CPanel a
+             Left Outer Join CComponentPlacement     b     ON a.spPlacementListRef = b.PID
+             Left Outer Join CComponent              c     ON b.spComponentRef   = c.OID
+             Left Outer Join AliasName               d     ON c.OID                    = d.PID        --Component Name
+             Left Outer Join CFolder                 e     ON d.FolderID             = e.OID
+             Left Outer Join AliasName               f     ON a.spPlacementListRef = f.PID         --PlacementList Name
+WHERE  
+            a.PID in (
+		     SELECT spPanelMatrix
+                              FROM CPanelLink
+                              WHERE PID IN
+                                                (SELECT  a.PID
+	                                     FROM AliasName a LEFT OUTER JOIN CFolder b ON a.FolderID = b.OID
+	                                     WHERE a.ObjectName = 'A2C1896170290' and b.bstrDisplayName= '02.IBU1.0_NSMK'
+	                                      )
+                     )
+ORDER BY
+           b.bstrRefDesignator

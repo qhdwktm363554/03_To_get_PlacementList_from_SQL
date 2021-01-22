@@ -1,0 +1,51 @@
+﻿
+/*마지막 유효 Recipe 검색*/
+Select *
+from CLastDownloadRecipeData 
+where bstrRecipeDisplayPath like '%5WY7825CS%' 
+order by dateDownloadTimeStamp desc  
+  --가장최신데이만 유효 Recipe bstrRecipeDisplayPath
+   -- Recipe = 2018\05.MGH\MGH40\ABS\5WY7825CS
+
+/*Recipe Name으로 PID 검색*/
+Select Top 1 a.PID 
+From AliasName a
+where a.ObjectName = '5WY7825CS' 
+Order By a.PID DESC       
+            
+/*
+--Panel 정보 검색
+Select * 
+From CPanelLink
+where
+       PID =             --여기는 AK에서 =으로 줬는데 IN이 맞는거 같다. 
+              (Select a.PID
+               From AliasName a
+                      Left Outer Join CFolder b              ON a.FolderID = b.OID
+               where 
+                     a.ObjectName = '5WY7825CS'
+                     and b.bstrDisplayName = 'ABS'        --여기서 'ABS'는 recipe 이름이네..
+              )
+             */
+
+Select spPanelMatrix 
+From CPanelLink 
+where PID = 128189697
+
+/*Get ComponentPlacement Bom List */
+Select 
+       f.*, d.*,e.*, b.* 
+	                                                     --f.ObjectName Result1, e.bstrDisplayName,  d.ObjectName Component, 
+                                                                 --b.bstrRefDesignator, b.dOffsetX, b.dOffsetY, b.dAngle, b.bOmit, b.bExclusive, b.bGlue
+From 
+    CPanel a
+             Left Outer Join CComponentPlacement     b     ON a.spPlacementListRef = b.PID
+             Left Outer Join CComponent                  c     ON b.spComponentRef   = c.OID
+             Left Outer Join AliasName                     d     ON c.OID                    = d.PID        --Component Name
+             Left Outer Join CFolder                         e     ON d.FolderID             = e.OID
+             Left Outer Join AliasName                      f      ON a.spPlacementListRef = f.PID         --PlacementList Name
+ where 
+            a.PID in ('0','121224775','121224776','121224777','121224778','121224779')
+ Order By
+            f.ObjectName, d.ObjectName, b.CCPCollection_CComBSTR
+ 
